@@ -1,0 +1,38 @@
+{
+  "name": "vyapaargpt",
+  "version": "1.0.0",
+  "description": "🇮🇳 Ultra Advanced AI Business OS for India - Complete business management platform with AI agents, voice interface, marketplace integrations, and multi-language support",
+  "main": "frontend/index.html",
+  "scripts": {
+    "dev": "cd frontend && python -m http.server 3000",
+    "build": "echo 'Building VyapaarGPT...' && echo 'Build complete!'",
+    "start": "cd frontend && python -m http.server 8080",
+    "backend": "cd backend && python main.py"
+  },
+  "keywords": [
+    "ai",
+    "business-os",
+    "india",
+    "fastapi",
+    "javascript",
+    "voice-interface",
+    "marketplace",
+    "msme",
+    "hindi",
+    "multi-language"
+  ],
+  "author": "Rajveer Singh",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/1Rajveer-Singh/OpenAi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/1Rajveer-Singh/OpenAi/issues"
+  },
+  "homepage": "https://github.com/1Rajveer-Singh/OpenAi#readme",
+  "engines": {
+    "node": ">=14.0.0",
+    "python": ">=3.8.0"
+  }
+}

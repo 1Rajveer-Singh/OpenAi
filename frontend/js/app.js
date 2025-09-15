@@ -3,7 +3,7 @@ class VyapaarGPTApp {
     constructor() {
         this.currentPage = 'dashboard';
         this.theme = localStorage.getItem('theme') || 'light';
-        this.apiBaseUrl = 'http://localhost:8000';
+        this.apiBaseUrl = window.location.hostname === 'localhost' ? 'http://localhost:8000' : '/api';
         this.charts = {};
         this.init();
     }
