@@ -1,0 +1,105 @@
+{
+  "name": "vyapaargpt-mobile",
+  "version": "1.0.0",
+  "description": "VyapaarGPT - AI-Powered Business OS for India's Local Shops & Startups",
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "build": "expo build",
+    "build:android": "expo build:android",
+    "build:ios": "expo build:ios",
+    "eject": "expo eject",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\""
+  },
+  "dependencies": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-native": "0.72.6",
+    "react-native-web": "~0.19.6"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "@types/react": "~18.2.14",
+    "@types/react-native": "^0.72.6",
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "@typescript-eslint/parser": "^6.12.0",
+    "eslint": "^8.54.0",
+    "eslint-config-expo": "^7.0.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-native": "^4.1.0",
+    "jest": "^29.2.1",
+    "prettier": "^3.1.0",
+    "typescript": "^5.1.3"
+  },
+  "keywords": [
+    "react-native",
+    "expo",
+    "vyapaargpt",
+    "business",
+    "ai",
+    "voice-first",
+    "india",
+    "msme",
+    "multilingual"
+  ],
+  "author": "VyapaarGPT Team",
+  "license": "MIT",
+  "private": true,
+  "expo": {
+    "name": "VyapaarGPT",
+    "slug": "vyapaargpt",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.vyapaargpt.mobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "com.vyapaargpt.mobile",
+      "permissions": [
+        "RECORD_AUDIO",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-speech",
+        {
+          "microphonePermission": "Allow VyapaarGPT to access your microphone for voice commands."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow VyapaarGPT to access your camera to scan products and receipts."
+        }
+      ]
+    ]
+  }
+}
