@@ -151,7 +151,7 @@ export const AppProvider = ({ children }) => {
     fetchDashboardData: async () => {
       try {
         actions.setLoading(true);
-        const data = await apiCall('/dashboard');
+        const data = await apiCall('/api/dashboard');
         dispatch({ type: ActionTypes.UPDATE_DASHBOARD, payload: data });
       } catch (error) {
         actions.setError('Failed to fetch dashboard data');
@@ -164,7 +164,7 @@ export const AppProvider = ({ children }) => {
     fetchInventory: async () => {
       try {
         actions.setLoading(true);
-        const data = await apiCall('/inventory');
+        const data = await apiCall('/api/inventory');
         dispatch({ type: ActionTypes.UPDATE_INVENTORY, payload: data });
       } catch (error) {
         actions.setError('Failed to fetch inventory');
@@ -175,7 +175,7 @@ export const AppProvider = ({ children }) => {
 
     addInventoryItem: async (item) => {
       try {
-        const newItem = await apiCall('/inventory', {
+        const newItem = await apiCall('/api/inventory', {
           method: 'POST',
           body: JSON.stringify(item)
         });
@@ -188,7 +188,7 @@ export const AppProvider = ({ children }) => {
 
     updateInventoryItem: async (id, updates) => {
       try {
-        const updatedItem = await apiCall(`/inventory/${id}`, {
+        const updatedItem = await apiCall(`/api/inventory/${id}`, {
           method: 'PUT',
           body: JSON.stringify(updates)
         });
@@ -201,7 +201,7 @@ export const AppProvider = ({ children }) => {
 
     deleteInventoryItem: async (id) => {
       try {
-        await apiCall(`/inventory/${id}`, { method: 'DELETE' });
+        await apiCall(`/api/inventory/${id}`, { method: 'DELETE' });
         dispatch({ type: ActionTypes.DELETE_INVENTORY_ITEM, payload: id });
         toast.success('Inventory item deleted successfully');
       } catch (error) {
@@ -213,7 +213,7 @@ export const AppProvider = ({ children }) => {
     fetchCustomers: async () => {
       try {
         actions.setLoading(true);
-        const data = await apiCall('/customers');
+        const data = await apiCall('/api/customers');
         dispatch({ type: ActionTypes.UPDATE_CUSTOMERS, payload: data });
       } catch (error) {
         actions.setError('Failed to fetch customers');
@@ -224,7 +224,7 @@ export const AppProvider = ({ children }) => {
 
     addCustomer: async (customer) => {
       try {
-        const newCustomer = await apiCall('/customers', {
+        const newCustomer = await apiCall('/api/customers', {
           method: 'POST',
           body: JSON.stringify(customer)
         });
@@ -237,7 +237,7 @@ export const AppProvider = ({ children }) => {
 
     updateCustomer: async (id, updates) => {
       try {
-        const updatedCustomer = await apiCall(`/customers/${id}`, {
+        const updatedCustomer = await apiCall(`/api/customers/${id}`, {
           method: 'PUT',
           body: JSON.stringify(updates)
         });
@@ -250,7 +250,7 @@ export const AppProvider = ({ children }) => {
 
     deleteCustomer: async (id) => {
       try {
-        await apiCall(`/customers/${id}`, { method: 'DELETE' });
+        await apiCall(`/api/customers/${id}`, { method: 'DELETE' });
         dispatch({ type: ActionTypes.DELETE_CUSTOMER, payload: id });
         toast.success('Customer deleted successfully');
       } catch (error) {
@@ -261,7 +261,7 @@ export const AppProvider = ({ children }) => {
     // Business profile actions
     updateBusinessProfile: async (updates) => {
       try {
-        const updatedProfile = await apiCall('/business/profile', {
+        const updatedProfile = await apiCall('/api/business/profile', {
           method: 'POST',
           body: JSON.stringify(updates)
         });
@@ -275,8 +275,17 @@ export const AppProvider = ({ children }) => {
 
   // Load initial data
   useEffect(() => {
-    actions.fetchDashboardData();
-  }, [actions]);
+    // Only fetch dashboard data once on component mount
+    const loadInitialData = async () => {
+      try {
+        await actions.fetchDashboardData();
+      } catch (error) {
+        console.error('Failed to load initial dashboard data:', error);
+      }
+    };
+    
+    loadInitialData();
+  }, []); // Empty dependency array to run only once
 
   const value = {
     state,
