@@ -1,30 +1,12 @@
 {
   "version": 2,
-  "builds": [
+  "buildCommand": "cd react-frontend && npm run build",
+  "outputDirectory": "react-frontend/build",
+  "installCommand": "cd react-frontend && npm install",
+  "rewrites": [
     {
-      "src": "react-frontend/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "react-frontend/build"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/static/(.*)",
-      "dest": "react-frontend/build/static/$1"
-    },
-    {
-      "src": "/favicon.svg",
-      "dest": "react-frontend/build/favicon.svg"
-    },
-    {
-      "src": "/manifest.json",
-      "dest": "react-frontend/build/manifest.json"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "react-frontend/build/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
