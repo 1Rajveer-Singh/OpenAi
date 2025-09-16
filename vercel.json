@@ -1,18 +1,26 @@
 {
   "version": 2,
-  "name": "vyapaargpt-react",
   "builds": [
     {
       "src": "react-frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "build"
+        "distDir": "react-frontend/build"
       }
     }
   ],
   "routes": [
     {
-      "handle": "filesystem"
+      "src": "/static/(.*)",
+      "dest": "react-frontend/build/static/$1"
+    },
+    {
+      "src": "/favicon.svg",
+      "dest": "react-frontend/build/favicon.svg"
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "react-frontend/build/manifest.json"
     },
     {
       "src": "/(.*)",
