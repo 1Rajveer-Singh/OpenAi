@@ -4,10 +4,11 @@
   "description": "🇮🇳 Ultra Advanced AI Business OS for India - Complete business management platform with AI agents, voice interface, marketplace integrations, and multi-language support",
   "main": "frontend/index.html",
   "scripts": {
-    "dev": "cd frontend && python -m http.server 3000",
-    "build": "echo 'Building VyapaarGPT...' && echo 'Build complete!'",
-    "start": "cd frontend && python -m http.server 8080",
-    "backend": "cd backend && python main.py"
+    "dev": "cd react-frontend && npm start",
+    "build": "cd react-frontend && npm install && npm run build",
+    "start": "cd react-frontend && npm start",
+    "backend": "cd backend && python main.py",
+    "vercel-build": "cd react-frontend && npm install && npm run build"
   },
   "keywords": [
     "ai",

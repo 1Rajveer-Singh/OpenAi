@@ -1,8 +1,4 @@
 {
-  "version": 2,
-  "buildCommand": "cd react-frontend && npm run build",
-  "outputDirectory": "react-frontend/build",
-  "installCommand": "cd react-frontend && npm install",
   "rewrites": [
     {
       "source": "/(.*)",
