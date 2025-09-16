@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AppProvider } from './context/AppContext';
+import DemoBanner from './components/Layout/DemoBanner';
 import Sidebar from './components/Layout/Sidebar';
 import Header from './components/Layout/Header';
 import { Dashboard, Inventory, Customers, Finance, Marketing, Reports, AIAgents, Settings } from './pages';
@@ -43,6 +44,7 @@ function App() {
 
   return (
     <AppProvider>
+      <DemoBanner />
       <Router>
         <div className={`app-container ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`} data-theme={theme}>
           <Sidebar 

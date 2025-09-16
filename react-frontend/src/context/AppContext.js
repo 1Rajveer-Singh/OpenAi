@@ -17,24 +17,45 @@ const initialState = {
     gstEnabled: true
   },
   dashboard: {
-    totalSales: 0,
-    totalCustomers: 0,
-    totalProducts: 0,
-    monthlyRevenue: 0,
-    salesData: [],
-    recentTransactions: []
+    totalSales: 150000,
+    totalCustomers: 1250,
+    totalProducts: 450,
+    monthlyRevenue: 2500000,
+    salesData: [
+      { month: 'Jan', sales: 180000 },
+      { month: 'Feb', sales: 220000 },
+      { month: 'Mar', sales: 190000 },
+      { month: 'Apr', sales: 250000 },
+      { month: 'May', sales: 280000 },
+      { month: 'Jun', sales: 150000 }
+    ],
+    recentTransactions: [
+      { id: 1, customer: 'Priya Sharma', amount: 15500, status: 'completed', date: '2024-01-15' },
+      { id: 2, customer: 'Amit Patel', amount: 8900, status: 'pending', date: '2024-01-14' },
+      { id: 3, customer: 'Sunita Devi', amount: 12000, status: 'completed', date: '2024-01-14' }
+    ]
   },
-  inventory: [],
-  customers: [],
+  inventory: [
+    { id: 1, name: 'iPhone 15 Pro', stock: 25, price: 129900, category: 'Electronics' },
+    { id: 2, name: 'Samsung Galaxy S24', stock: 30, price: 89900, category: 'Electronics' },
+    { id: 3, name: 'MacBook Air M3', stock: 10, price: 114900, category: 'Computers' }
+  ],
+  customers: [
+    { id: 1, name: 'Priya Sharma', phone: '+91 98765 43210', email: 'priya@email.com', totalOrders: 15 },
+    { id: 2, name: 'Amit Patel', phone: '+91 87654 32109', email: 'amit@email.com', totalOrders: 8 },
+    { id: 3, name: 'Sunita Devi', phone: '+91 76543 21098', email: 'sunita@email.com', totalOrders: 12 }
+  ],
   loading: false,
   error: null,
-  apiBaseUrl: window.location.hostname === 'localhost' ? 'http://localhost:8000' : '/api'
+  apiConnected: false,
+  apiBaseUrl: window.location.hostname === 'localhost' ? 'http://localhost:8000' : null
 };
 
 // Action types
 const ActionTypes = {
   SET_LOADING: 'SET_LOADING',
   SET_ERROR: 'SET_ERROR',
+  SET_API_CONNECTION: 'SET_API_CONNECTION',
   UPDATE_DASHBOARD: 'UPDATE_DASHBOARD',
   UPDATE_INVENTORY: 'UPDATE_INVENTORY',
   ADD_INVENTORY_ITEM: 'ADD_INVENTORY_ITEM',
@@ -55,6 +76,9 @@ const appReducer = (state, action) => {
     
     case ActionTypes.SET_ERROR:
       return { ...state, error: action.payload, loading: false };
+    
+    case ActionTypes.SET_API_CONNECTION:
+      return { ...state, apiConnected: action.payload };
     
     case ActionTypes.UPDATE_DASHBOARD:
       return { ...state, dashboard: { ...state.dashboard, ...action.payload } };
@@ -116,6 +140,12 @@ export const AppProvider = ({ children }) => {
 
   // API helper function
   const apiCall = async (endpoint, options = {}) => {
+    // If no API base URL (production), return null to use fallback data
+    if (!state.apiBaseUrl) {
+      console.log('API not available, using fallback data');
+      return null;
+    }
+
     try {
       const response = await fetch(`${state.apiBaseUrl}${endpoint}`, {
         headers: {
@@ -129,10 +159,13 @@ export const AppProvider = ({ children }) => {
         throw new Error(`API Error: ${response.status} ${response.statusText}`);
       }
 
+      dispatch({ type: ActionTypes.SET_API_CONNECTION, payload: true });
       return await response.json();
     } catch (error) {
       console.error('API Call Error:', error);
-      throw error;
+      dispatch({ type: ActionTypes.SET_API_CONNECTION, payload: false });
+      // Don't throw error, return null to use fallback data
+      return null;
     }
   };
 
@@ -147,14 +180,23 @@ export const AppProvider = ({ children }) => {
       }
     },
 
+    setApiConnection: (connected) => dispatch({ type: ActionTypes.SET_API_CONNECTION, payload: connected }),
+
     // Dashboard actions
     fetchDashboardData: async () => {
       try {
         actions.setLoading(true);
         const data = await apiCall('/api/dashboard');
-        dispatch({ type: ActionTypes.UPDATE_DASHBOARD, payload: data });
+        
+        // If API call returns null (API not available), use existing fallback data
+        if (data) {
+          dispatch({ type: ActionTypes.UPDATE_DASHBOARD, payload: data });
+        } else {
+          console.log('Using fallback dashboard data');
+        }
       } catch (error) {
-        actions.setError('Failed to fetch dashboard data');
+        console.log('API not available, using fallback data');
+        // Don't show error to user, just use fallback data
       } finally {
         actions.setLoading(false);
       }
@@ -165,41 +207,67 @@ export const AppProvider = ({ children }) => {
       try {
         actions.setLoading(true);
         const data = await apiCall('/api/inventory');
-        dispatch({ type: ActionTypes.UPDATE_INVENTORY, payload: data });
+        
+        if (data) {
+          dispatch({ type: ActionTypes.UPDATE_INVENTORY, payload: data });
+        } else {
+          console.log('Using fallback inventory data');
+        }
       } catch (error) {
-        actions.setError('Failed to fetch inventory');
+        console.log('API not available, using fallback data');
       } finally {
         actions.setLoading(false);
       }
     },
 
     addInventoryItem: async (item) => {
+      if (!state.apiConnected) {
+        toast.error('Feature not available in demo mode');
+        return;
+      }
+      
       try {
         const newItem = await apiCall('/api/inventory', {
           method: 'POST',
           body: JSON.stringify(item)
         });
-        dispatch({ type: ActionTypes.ADD_INVENTORY_ITEM, payload: newItem });
-        toast.success('Inventory item added successfully');
+        
+        if (newItem) {
+          dispatch({ type: ActionTypes.ADD_INVENTORY_ITEM, payload: newItem });
+          toast.success('Inventory item added successfully');
+        }
       } catch (error) {
         actions.setError('Failed to add inventory item');
       }
     },
 
     updateInventoryItem: async (id, updates) => {
+      if (!state.apiConnected) {
+        toast.error('Feature not available in demo mode');
+        return;
+      }
+      
       try {
         const updatedItem = await apiCall(`/api/inventory/${id}`, {
           method: 'PUT',
           body: JSON.stringify(updates)
         });
-        dispatch({ type: ActionTypes.UPDATE_INVENTORY_ITEM, payload: updatedItem });
-        toast.success('Inventory item updated successfully');
+        
+        if (updatedItem) {
+          dispatch({ type: ActionTypes.UPDATE_INVENTORY_ITEM, payload: updatedItem });
+          toast.success('Inventory item updated successfully');
+        }
       } catch (error) {
         actions.setError('Failed to update inventory item');
       }
     },
 
     deleteInventoryItem: async (id) => {
+      if (!state.apiConnected) {
+        toast.error('Feature not available in demo mode');
+        return;
+      }
+      
       try {
         await apiCall(`/api/inventory/${id}`, { method: 'DELETE' });
         dispatch({ type: ActionTypes.DELETE_INVENTORY_ITEM, payload: id });
@@ -214,41 +282,67 @@ export const AppProvider = ({ children }) => {
       try {
         actions.setLoading(true);
         const data = await apiCall('/api/customers');
-        dispatch({ type: ActionTypes.UPDATE_CUSTOMERS, payload: data });
+        
+        if (data) {
+          dispatch({ type: ActionTypes.UPDATE_CUSTOMERS, payload: data });
+        } else {
+          console.log('Using fallback customer data');
+        }
       } catch (error) {
-        actions.setError('Failed to fetch customers');
+        console.log('API not available, using fallback data');
       } finally {
         actions.setLoading(false);
       }
     },
 
     addCustomer: async (customer) => {
+      if (!state.apiConnected) {
+        toast.error('Feature not available in demo mode');
+        return;
+      }
+      
       try {
         const newCustomer = await apiCall('/api/customers', {
           method: 'POST',
           body: JSON.stringify(customer)
         });
-        dispatch({ type: ActionTypes.ADD_CUSTOMER, payload: newCustomer });
-        toast.success('Customer added successfully');
+        
+        if (newCustomer) {
+          dispatch({ type: ActionTypes.ADD_CUSTOMER, payload: newCustomer });
+          toast.success('Customer added successfully');
+        }
       } catch (error) {
         actions.setError('Failed to add customer');
       }
     },
 
     updateCustomer: async (id, updates) => {
+      if (!state.apiConnected) {
+        toast.error('Feature not available in demo mode');
+        return;
+      }
+      
       try {
         const updatedCustomer = await apiCall(`/api/customers/${id}`, {
           method: 'PUT',
           body: JSON.stringify(updates)
         });
-        dispatch({ type: ActionTypes.UPDATE_CUSTOMER, payload: updatedCustomer });
-        toast.success('Customer updated successfully');
+        
+        if (updatedCustomer) {
+          dispatch({ type: ActionTypes.UPDATE_CUSTOMER, payload: updatedCustomer });
+          toast.success('Customer updated successfully');
+        }
       } catch (error) {
         actions.setError('Failed to update customer');
       }
     },
 
     deleteCustomer: async (id) => {
+      if (!state.apiConnected) {
+        toast.error('Feature not available in demo mode');
+        return;
+      }
+      
       try {
         await apiCall(`/api/customers/${id}`, { method: 'DELETE' });
         dispatch({ type: ActionTypes.DELETE_CUSTOMER, payload: id });
@@ -260,13 +354,21 @@ export const AppProvider = ({ children }) => {
 
     // Business profile actions
     updateBusinessProfile: async (updates) => {
+      if (!state.apiConnected) {
+        toast.error('Feature not available in demo mode');
+        return;
+      }
+      
       try {
         const updatedProfile = await apiCall('/api/business/profile', {
           method: 'POST',
           body: JSON.stringify(updates)
         });
-        dispatch({ type: ActionTypes.UPDATE_BUSINESS_PROFILE, payload: updatedProfile });
-        toast.success('Business profile updated successfully');
+        
+        if (updatedProfile) {
+          dispatch({ type: ActionTypes.UPDATE_BUSINESS_PROFILE, payload: updatedProfile });
+          toast.success('Business profile updated successfully');
+        }
       } catch (error) {
         actions.setError('Failed to update business profile');
       }
