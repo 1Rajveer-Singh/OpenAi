@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useAppContext } from '../../context/AppContext';
 import './Header.css';
 
 const Header = ({ onMenuToggle, onThemeToggle, theme }) => {
-  const { state } = useApp();
+  const { state } = useAppContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);

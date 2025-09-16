@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
-// Initial state
+  // Initial state
 const initialState = {
   user: {
     name: 'Rajesh Kumar',
@@ -292,12 +292,12 @@ export const AppProvider = ({ children }) => {
 };
 
 // Hook to use the context
-export const useApp = () => {
+export const useAppContext = () => {
   const context = useContext(AppContext);
   if (!context) {
-    throw new Error('useApp must be used within an AppProvider');
+    throw new Error('useAppContext must be used within an AppProvider');
   }
   return context;
 };
 
-export default AppContext;
+export default AppProvider;

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useApp } from '../context/AppContext';
+import { useAppContext } from '../context/AppContext';
 import DashboardCard from '../components/Dashboard/DashboardCard';
 import { SalesChart, RevenueChart, RecentTransactions, TopProducts } from '../components/Dashboard';
 import './Dashboard.css';
 
 const Dashboard = () => {
-  const { state, actions } = useApp();
+  const { state, actions } = useAppContext();
   const [greeting, setGreeting] = useState('');
 
   useEffect(() => {
