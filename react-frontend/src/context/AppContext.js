@@ -140,14 +140,17 @@ export const AppProvider = ({ children }) => {
 
   // API helper function
   const apiCall = async (endpoint, options = {}) => {
+    // Get current apiBaseUrl from state
+    const currentApiBaseUrl = window.location.hostname === 'localhost' ? 'http://localhost:8000' : null;
+    
     // If no API base URL (production), return null to use fallback data
-    if (!state.apiBaseUrl) {
+    if (!currentApiBaseUrl) {
       console.log('API not available, using fallback data');
       return null;
     }
 
     try {
-      const response = await fetch(`${state.apiBaseUrl}${endpoint}`, {
+      const response = await fetch(`${currentApiBaseUrl}${endpoint}`, {
         headers: {
           'Content-Type': 'application/json',
           ...options.headers
@@ -380,13 +383,21 @@ export const AppProvider = ({ children }) => {
     // Only fetch dashboard data once on component mount
     const loadInitialData = async () => {
       try {
-        await actions.fetchDashboardData();
+        if (state.apiBaseUrl) {
+          const data = await apiCall('/api/dashboard');
+          if (data) {
+            dispatch({ type: ActionTypes.UPDATE_DASHBOARD, payload: data });
+            dispatch({ type: ActionTypes.SET_API_CONNECTION, payload: true });
+          }
+        }
       } catch (error) {
-        console.error('Failed to load initial dashboard data:', error);
+        console.log('API not available, using fallback data');
+        dispatch({ type: ActionTypes.SET_API_CONNECTION, payload: false });
       }
     };
     
     loadInitialData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array to run only once
 
   const value = {
