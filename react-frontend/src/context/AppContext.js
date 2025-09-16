@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
 
   // Initial state
@@ -137,9 +137,12 @@ const AppContext = createContext();
 // Provider component
 export const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
+  
+  // Track ongoing API calls to prevent duplicates
+  const ongoingCalls = useRef(new Set());
 
-  // API helper function
-  const apiCall = async (endpoint, options = {}) => {
+  // API helper function with call tracking
+  const apiCall = useCallback(async (endpoint, options = {}) => {
     // Get current apiBaseUrl from state
     const currentApiBaseUrl = window.location.hostname === 'localhost' ? 'http://localhost:8000' : null;
     
@@ -148,6 +151,15 @@ export const AppProvider = ({ children }) => {
       console.log('API not available, using fallback data');
       return null;
     }
+
+    // Prevent duplicate calls
+    const callKey = `${options.method || 'GET'}-${endpoint}`;
+    if (ongoingCalls.current.has(callKey)) {
+      console.log(`Skipping duplicate API call: ${callKey}`);
+      return null;
+    }
+
+    ongoingCalls.current.add(callKey);
 
     try {
       const response = await fetch(`${currentApiBaseUrl}${endpoint}`, {
@@ -169,11 +181,13 @@ export const AppProvider = ({ children }) => {
       dispatch({ type: ActionTypes.SET_API_CONNECTION, payload: false });
       // Don't throw error, return null to use fallback data
       return null;
+    } finally {
+      ongoingCalls.current.delete(callKey);
     }
-  };
+  }, []);
 
-  // Action creators
-  const actions = {
+  // Action creators with useCallback to prevent recreations
+  const actions = useMemo(() => ({
     setLoading: (loading) => dispatch({ type: ActionTypes.SET_LOADING, payload: loading }),
     
     setError: (error) => {
@@ -188,7 +202,7 @@ export const AppProvider = ({ children }) => {
     // Dashboard actions
     fetchDashboardData: async () => {
       try {
-        actions.setLoading(true);
+        dispatch({ type: ActionTypes.SET_LOADING, payload: true });
         const data = await apiCall('/api/dashboard');
         
         // If API call returns null (API not available), use existing fallback data
@@ -201,14 +215,14 @@ export const AppProvider = ({ children }) => {
         console.log('API not available, using fallback data');
         // Don't show error to user, just use fallback data
       } finally {
-        actions.setLoading(false);
+        dispatch({ type: ActionTypes.SET_LOADING, payload: false });
       }
     },
 
     // Inventory actions
     fetchInventory: async () => {
       try {
-        actions.setLoading(true);
+        dispatch({ type: ActionTypes.SET_LOADING, payload: true });
         const data = await apiCall('/api/inventory');
         
         if (data) {
@@ -219,7 +233,7 @@ export const AppProvider = ({ children }) => {
       } catch (error) {
         console.log('API not available, using fallback data');
       } finally {
-        actions.setLoading(false);
+        dispatch({ type: ActionTypes.SET_LOADING, payload: false });
       }
     },
 
@@ -240,7 +254,7 @@ export const AppProvider = ({ children }) => {
           toast.success('Inventory item added successfully');
         }
       } catch (error) {
-        actions.setError('Failed to add inventory item');
+        dispatch({ type: ActionTypes.SET_ERROR, payload: 'Failed to add inventory item' });
       }
     },
 
@@ -261,7 +275,7 @@ export const AppProvider = ({ children }) => {
           toast.success('Inventory item updated successfully');
         }
       } catch (error) {
-        actions.setError('Failed to update inventory item');
+        dispatch({ type: ActionTypes.SET_ERROR, payload: 'Failed to update inventory item' });
       }
     },
 
@@ -276,14 +290,14 @@ export const AppProvider = ({ children }) => {
         dispatch({ type: ActionTypes.DELETE_INVENTORY_ITEM, payload: id });
         toast.success('Inventory item deleted successfully');
       } catch (error) {
-        actions.setError('Failed to delete inventory item');
+        dispatch({ type: ActionTypes.SET_ERROR, payload: 'Failed to delete inventory item' });
       }
     },
 
     // Customer actions
     fetchCustomers: async () => {
       try {
-        actions.setLoading(true);
+        dispatch({ type: ActionTypes.SET_LOADING, payload: true });
         const data = await apiCall('/api/customers');
         
         if (data) {
@@ -294,7 +308,7 @@ export const AppProvider = ({ children }) => {
       } catch (error) {
         console.log('API not available, using fallback data');
       } finally {
-        actions.setLoading(false);
+        dispatch({ type: ActionTypes.SET_LOADING, payload: false });
       }
     },
 
@@ -315,7 +329,7 @@ export const AppProvider = ({ children }) => {
           toast.success('Customer added successfully');
         }
       } catch (error) {
-        actions.setError('Failed to add customer');
+        dispatch({ type: ActionTypes.SET_ERROR, payload: 'Failed to add customer' });
       }
     },
 
@@ -336,7 +350,7 @@ export const AppProvider = ({ children }) => {
           toast.success('Customer updated successfully');
         }
       } catch (error) {
-        actions.setError('Failed to update customer');
+        dispatch({ type: ActionTypes.SET_ERROR, payload: 'Failed to update customer' });
       }
     },
 
@@ -351,7 +365,7 @@ export const AppProvider = ({ children }) => {
         dispatch({ type: ActionTypes.DELETE_CUSTOMER, payload: id });
         toast.success('Customer deleted successfully');
       } catch (error) {
-        actions.setError('Failed to delete customer');
+        dispatch({ type: ActionTypes.SET_ERROR, payload: 'Failed to delete customer' });
       }
     },
 
@@ -373,38 +387,17 @@ export const AppProvider = ({ children }) => {
           toast.success('Business profile updated successfully');
         }
       } catch (error) {
-        actions.setError('Failed to update business profile');
+        dispatch({ type: ActionTypes.SET_ERROR, payload: 'Failed to update business profile' });
       }
     }
-  };
+  }), [apiCall, state.apiConnected]);
 
-  // Load initial data
-  useEffect(() => {
-    // Only fetch dashboard data once on component mount
-    const loadInitialData = async () => {
-      try {
-        if (state.apiBaseUrl) {
-          const data = await apiCall('/api/dashboard');
-          if (data) {
-            dispatch({ type: ActionTypes.UPDATE_DASHBOARD, payload: data });
-            dispatch({ type: ActionTypes.SET_API_CONNECTION, payload: true });
-          }
-        }
-      } catch (error) {
-        console.log('API not available, using fallback data');
-        dispatch({ type: ActionTypes.SET_API_CONNECTION, payload: false });
-      }
-    };
-    
-    loadInitialData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty dependency array to run only once
-
-  const value = {
+  // Stabilize context value to prevent unnecessary re-renders
+  const value = useMemo(() => ({
     state,
     actions,
     apiCall
-  };
+  }), [state, actions, apiCall]);
 
   return (
     <AppContext.Provider value={value}>

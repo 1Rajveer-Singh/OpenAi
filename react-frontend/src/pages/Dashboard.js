@@ -19,9 +19,9 @@ const Dashboard = () => {
       setGreeting('Good Evening! शुभ संध्या!');
     }
 
-    // Fetch dashboard data
+    // Fetch dashboard data only once on component mount
     actions.fetchDashboardData();
-  }, [actions]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const dashboardStats = [
     {
